@@ -1,0 +1,151 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserStatus {
+  ACTIVATED
+  INACTIVATED
+  BANNED
+}
+
+model User {
+  id               String     @id
+  identifier       String?    @unique
+  status           UserStatus @default(ACTIVATED)
+  firstName        String?    @map("first_name")
+  lastName         String?    @map("last_name")
+  telegramUsername String?    @map("telegram_username")
+  languageCode     String?    @map("language_code")
+  allowsWriteToPm  Boolean?   @map("allows_write_to_pm")
+  telegramId       String?    @map("telegram_id")
+  walletAddress    String?    @map("wallet_address")
+  signedInAt       DateTime?  @map("signed_in_at")
+  signedUpAt       DateTime?  @map("signed_up_at")
+  verifiedAt       DateTime?  @map("verified_at")
+  createdAt        DateTime   @default(now()) @map("created_at")
+  updatedAt        DateTime?  @updatedAt @map("updated_at")
+  password         String?
+
+  @@index([identifier])
+  @@index([telegramUsername])
+  @@index([telegramId])
+  @@index([walletAddress])
+  @@index([createdAt])
+  @@index([verifiedAt])
+  @@index([signedUpAt])
+  @@map("user")
+}
+
+enum TokenType {
+  NATIVE
+  JETTON
+  IN_APP
+}
+
+enum WalletType {
+  SYSTEM
+  USER
+}
+
+model Wallet {
+  id                     String     @id @default(uuid())
+  userId                 String     @map("user_id")
+  symbol                 String     @map("symbol")
+  tokenType              TokenType  @map("token_type")
+  walletType             WalletType @map("wallet_type")
+  availableBalance       String?    @map("available_balance")
+  lockedBalance          String?    @map("locked_balance")
+  totalBalance           String?    @map("total_balance")
+  beforeTotalBalance     String?    @map("before_total_balance")
+  beforeLockedBalance    String?    @map("before_locked_balance")
+  beforeAvailableBalance String?    @map("before_available_balance")
+  lastTxId               String?    @map("last_tx_id")
+  lastTxAt               BigInt?    @map("last_tx_at")
+  linkTonAddress         String?    @map("link_ton_address")
+  createdAt              DateTime   @default(now()) @map("created_at")
+  updatedAt              DateTime?  @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([symbol])
+  @@index([tokenType])
+  @@index([createdAt])
+  @@index([updatedAt])
+  @@map("wallet")
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAW
+  TRANSFER
+  LOCK
+  UNLOCK
+}
+
+enum TransactionStatus {
+  PENDING
+  PROCESSING
+  TRANSFERRED
+  SUCCESS
+  FAILED
+}
+
+model Transaction {
+  id           String            @id
+  fromWallet   String?           @map("from_wallet")
+  toWallet     String?           @map("to_wallet")
+  fromUserId   String?           @map("from_user_id")
+  toUserId     String?           @map("to_user_id")
+  refTxId      String?           @map("ref_tx_id")
+  refId        String?           @map("ref_id")
+  symbol       String?           @map("symbol")
+  tokenType    TokenType         @map("token_type")
+  amount       String            @map("amount")
+  actualAmount String?           @map("actual_amount")
+  txnFee       String?           @map("txn_fee")
+  type         TransactionType   @map("type")
+  status       TransactionStatus @default(PENDING)
+  memo         String?           @map("memo")
+  metadata     Json?             @map("metadata")
+  createdAt    DateTime          @default(now()) @map("created_at")
+  updatedAt    DateTime?         @updatedAt @map("updated_at")
+
+  @@index([fromUserId])
+  @@index([toUserId])
+  @@index([fromWallet])
+  @@index([toWallet])
+  @@index([refTxId])
+  @@index([refId])
+  @@index([symbol])
+  @@index([tokenType])
+  @@index([createdAt])
+  @@index([updatedAt])
+  @@map("transaction")
+}
+
+enum TonScanConfigStatus {
+  ACTIVE
+  RUNNING
+  STOPPED
+}
+
+model TonScanConfig {
+  id            String               @id
+  status        TonScanConfigStatus? @default(ACTIVE) @map("status")
+  lastEventId   String?              @map("last_event_id")
+  lastTimestamp BigInt?              @map("last_timestamp")
+  lastLt        BigInt?              @map("last_lt")
+  createdAt     DateTime             @default(now()) @map("created_at")
+  updatedAt     DateTime?            @updatedAt @map("updated_at")
+
+  @@index([createdAt])
+  @@index([updatedAt])
+  @@map("ton_scan_config")
+}
