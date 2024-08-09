@@ -12,6 +12,10 @@
 
 5. TON Center: https://toncenter.com/
 
+6. Postgres Database
+
+7. Redis
+
 ## Installation
 
 ```bash
